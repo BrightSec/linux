@@ -696,10 +696,13 @@ _ieee802_11_parse_elems_full(struct ieee80211_elems_parse_params *params,
 			}
 
 			for_each_element_id(subelem, WLAN_EID_TX_POWER_ENVELOPE,
-					    pos, elen)
+					    pos, elen) {
+				if (!subelem->datalen)
+					continue;
 				ieee80211_parse_tpe(&elems->csa_tpe,
 						    subelem->data + 1,
 						    subelem->datalen - 1);
+			}
 			break;
 		case WLAN_EID_COUNTRY:
 			elems->country_elem = pos;
