@@ -713,6 +713,11 @@ static int btf_validate_type(const struct btf *btf, const struct btf_type *t, __
 			err = err ?: btf_validate_id(btf, m->type, id);
 			if (err)
 				return err;
+			if ((__u64)btf_member_bit_offset(t, i) > (__u64)t->size * 8) {
+				pr_warn("btf: type [%u]: field #%d offset is out of struct bounds\n",
+					id, i);
+				return -EINVAL;
+			}
 		}
 		break;
 	}
@@ -754,6 +759,9 @@ static int btf_validate_type(const struct btf *btf, const struct btf_type *t, __
 	case BTF_KIND_FUNC_PROTO: {
 		const struct btf_param *m = btf_params(t);
 
+		err = btf_validate_id(btf, t->type, id);
+		if (err)
+			return err;
 		n = btf_vlen(t);
 		for (i = 0; i < n; i++, m++) {
 			err = btf_validate_str(btf, m->name_off, "param name", id);
